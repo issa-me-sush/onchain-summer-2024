@@ -11,7 +11,7 @@ const dummyTasks = [
     { id: 3, name: "Follow Kyle on Instagram", reward: "Reward of 100 casts", slots: "2/100 slots left" },
 ];
 
-getUserEmbeddedWalletAddress("gautam@jiffyscan.xyz");
+getUserEmbeddedWalletAddress("lazycoder1");
 getInfoFromGithub("lazycoder1");
 const Home: NextPage = () => {
     return (
