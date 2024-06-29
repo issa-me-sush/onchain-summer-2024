@@ -10,14 +10,24 @@ myHeaders.append("privy-app-id", PRIVY_APP_ID as string);
 myHeaders.append("Content-Type", "application/json");
 myHeaders.append("Authorization", `Basic ${auth}`);
 
+export const getUserId = async (userName: string) => {
+    const res = await fetch("https://api.github.com/users/" + userName);
+    const resText: any = JSON.parse(await res.text());
+    if ("id" in resText) {
+        console.log(resText.id, "userId");
+        return resText.id;
+    }
+};
+
 export const getUserEmbeddedWalletAddress = async (userName: string) => {
     console.log("username", userName);
+    const sub = await getUserId(userName);
     const raw = JSON.stringify({
         create_embedded_wallet: true,
         linked_accounts: [
             {
                 username: userName,
-                subject: "open_work_profile",
+                subject: sub.toString(),
                 type: "github_oauth",
             },
         ],
