@@ -3,6 +3,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { getUserEmbeddedWalletAddress } from "./api/getUsersAddress";
+import { getInfoFromGithub } from "./api/getInfoFromGithub";
 
 const dummyTasks = [
     { id: 1, name: "Follow Kyle on Instagram", reward: "Tx Fee Reward of $5 on Base", slots: "2/100 slots left" },
@@ -11,7 +12,7 @@ const dummyTasks = [
 ];
 
 getUserEmbeddedWalletAddress("gautam@jiffyscan.xyz");
-
+getInfoFromGithub();
 const Home: NextPage = () => {
     return (
         <div>
