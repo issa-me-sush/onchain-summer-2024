@@ -11,46 +11,51 @@ myHeaders.append("Content-Type", "application/json");
 myHeaders.append("Authorization", `Basic ${auth}`);
 
 export const getUserId = async (userName: string) => {
-    const res = await fetch("https://api.github.com/users/" + userName);
-    const resText: any = JSON.parse(await res.text());
-    if ("id" in resText) {
-        console.log(resText.id, "userId");
-        return resText.id;
+    try {
+        const res = await fetch("https://api.github.com/users/" + userName);
+        const resText: any = JSON.parse(await res.text());
+        if ("id" in resText) {
+            return resText.id;
+        }
+    } catch (error) {
+        console.error(`Error getting user ID for ${userName}: `, error);
+        throw error;
     }
 };
 
 export const getUserEmbeddedWalletAddress = async (userName: string) => {
-    console.log("username", userName);
-    const sub = await getUserId(userName);
-    const raw = JSON.stringify({
-        create_embedded_wallet: true,
-        linked_accounts: [
-            {
-                username: userName,
-                subject: sub.toString(),
-                type: "github_oauth",
-            },
-        ],
-    });
-
-    const requestOptions: RequestInit = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-    };
-
-    const res = await fetch("https://auth.privy.io/api/v1/users", requestOptions);
-    const resText: any = JSON.parse(await res.text());
-    console.log("resText", resText);
-    console.log(resText["linked_accounts"]);
-
-    if ("linked_accounts" in resText) {
-        resText["linked_accounts"].forEach((account: any) => {
-            if (account.type === "wallet") {
-                console.log(account.address);
-                return account.address;
-            }
+    try {
+        const sub = await getUserId(userName);
+        const raw = JSON.stringify({
+            create_embedded_wallet: true,
+            linked_accounts: [
+                {
+                    username: userName,
+                    subject: sub.toString(),
+                    type: "github_oauth",
+                },
+            ],
         });
+
+        const requestOptions: RequestInit = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow",
+        };
+
+        const res = await fetch("https://auth.privy.io/api/v1/users", requestOptions);
+        const resText: any = JSON.parse(await res.text());
+
+        if ("linked_accounts" in resText) {
+            resText["linked_accounts"].forEach((account: any) => {
+                if (account.type === "wallet") {
+                    return account.address;
+                }
+            });
+        }
+    } catch (error) {
+        console.error(`Error getting wallet address for ${userName}: `, error);
+        throw error;
     }
 };
