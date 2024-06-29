@@ -1,3 +1,5 @@
+import { createKernelAccount } from "@zerodev/sdk";
+
 const myHeaders = new Headers();
 const PRIVY_APP_ID = process.env.PRIVY_APP_ID;
 const PRIVY_SECRET_ID = process.env.PRIVY_SECRET_ID;
@@ -8,12 +10,14 @@ myHeaders.append("privy-app-id", PRIVY_APP_ID as string);
 myHeaders.append("Content-Type", "application/json");
 myHeaders.append("Authorization", `Basic ${auth}`);
 
-export const getUserEmbeddedWalletAddress = async (email: string) => {
+export const getUserEmbeddedWalletAddress = async (userName: string) => {
+    console.log("username", userName);
     const raw = JSON.stringify({
         create_embedded_wallet: true,
         linked_accounts: [
             {
-                address: email,
+                username: userName,
+                subject: "open_work_profile",
                 type: "github_oauth",
             },
         ],
@@ -28,6 +32,7 @@ export const getUserEmbeddedWalletAddress = async (email: string) => {
 
     const res = await fetch("https://auth.privy.io/api/v1/users", requestOptions);
     const resText: any = JSON.parse(await res.text());
+    console.log("resText", resText);
     console.log(resText["linked_accounts"]);
 
     if ("linked_accounts" in resText) {
