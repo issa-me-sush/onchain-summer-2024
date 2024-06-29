@@ -12,7 +12,7 @@ const dummyTasks = [
 ];
 
 getUserEmbeddedWalletAddress("gautam@jiffyscan.xyz");
-getInfoFromGithub();
+getInfoFromGithub("lazycoder1");
 const Home: NextPage = () => {
     return (
         <div>

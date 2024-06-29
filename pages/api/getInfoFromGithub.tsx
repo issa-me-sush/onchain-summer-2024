@@ -24,14 +24,12 @@ const myHeaders = new Headers();
 myHeaders.append("Authorization", auth);
 myHeaders.append("Content-Type", "application/json");
 
-const options = {
-    method: "POST",
-    headers: myHeaders,
-    body: JSON.stringify({ query: query, variables: { login: "lazycoder1" } }),
-};
-
-export const getInfoFromGithub = async () => {
-    console.log("running github");
+export const getInfoFromGithub = async (userName: string) => {
+    const options = {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify({ query: query, variables: { login: userName } }),
+    };
     const res = await fetch(url, options);
     const resText: any = JSON.parse(await res.text());
     if ("data" in resText && "repositoryOwner" in resText["data"] && "repositories" in resText["data"]["repositoryOwner"]) {
