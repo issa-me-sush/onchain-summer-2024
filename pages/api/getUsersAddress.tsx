@@ -14,7 +14,7 @@ export const getUserEmbeddedWalletAddress = async (email: string) => {
         linked_accounts: [
             {
                 address: email,
-                type: "email",
+                type: "github_oauth",
             },
         ],
     });

@@ -8,7 +8,7 @@ const Login = () => {
 
   useEffect(() => {
     if (ready && authenticated) {
-      router.push('/home');
+      router.push('/');
     }
   }, [ready, authenticated, router]);
 
@@ -20,7 +20,7 @@ const Login = () => {
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <button
         disabled={!ready}
-        onClick={login}
+        onClick={handleLogin}
         className="px-4 py-2 text-white bg-blue-500 rounded"
       >
         Log in
