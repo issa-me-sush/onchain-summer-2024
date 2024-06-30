@@ -4,7 +4,7 @@ import DeveloperCard from "../components/DeveloperCard";
 import { useEffect,useState } from "react";
 import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from "@ethereum-attestation-service/eas-sdk"
 import { createWalletClient, custom } from 'viem';
-import { providerToSmartAccountSigner, ENTRYPOINT_ADDRESS_V07 } from 'permissionless';
+import { providerToSmartAccountSigner, ENTRYPOINT_ADDRESS_V07 , ENTRYPOINT_ADDRESS_V06} from 'permissionless';
 import { createPublicClient, http } from 'viem';
 import { createZeroDevPaymasterClient, createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -12,10 +12,11 @@ import ExtendedSmartAccountSigner from '../lib/extended';
 import { Signer } from "ethers";
 import { ethers } from "ethers";
 import { useAccount } from "wagmi";
+import useEas from "../hooks/eas";
 // import CustomSigner from "../lib/CustomSigner"
 // import { useSigner,useProvider } from "../lib/eas-wagmi-utils";
 import { useEthersProvider } from "../lib/eas-wagmi-utils";
-import { sepolia } from 'viem/chains';
+import { baseSepolia, sepolia } from 'viem/chains';
 const dummyDevelopers = [
   { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
   { id: 2, githubUsername: "dev2", image: "/github.png", contributions: 30, score: 70 },
@@ -29,6 +30,7 @@ const Home = () => {
   const { ready, authenticated, login,user } = usePrivy();
   const {wallets} = useWallets();
   const {address} = useAccount()
+   const { attestSchema, setAccountClient, accountClient }= useEas()
   console.log(address,"<- address")
   const {sendTransaction} = useSendTransaction()
 const embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === 'privy'));
@@ -54,7 +56,7 @@ const providerwagmi = useEthersProvider()
           // const extendedSigner = new ExtendedSmartAccountSigner(smartAccountSigner, provider);
         // Initialize a viem public client on your app's desired network
         const publicClient = createPublicClient({
-          transport: http(sepolia.rpcUrls.default.http[0]),
+          transport: http(baseSepolia.rpcUrls.default.http[0]),
         });
 
         // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`
@@ -72,43 +74,78 @@ const providerwagmi = useEthersProvider()
           entryPoint: ENTRYPOINT_ADDRESS_V07,
            kernelVersion: "0.3.0"
         });
-
-
-        setAccountAddress(account.address);
+        const kernelClient = createKernelAccountClient({
+          account,
+          chain: baseSepolia,
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+          bundlerTransport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3 '),
+          middleware: {
+            sponsorUserOperation: async ({ userOperation }) => {
+              const zerodevPaymaster = createZeroDevPaymasterClient({
+                chain: baseSepolia,
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                transport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3 '),
+              })
+              return zerodevPaymaster.sponsorUserOperation({
+                userOperation,
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
+              })
+            }
+          }
+        })
+        setAccountClient(kernelClient)
+        attestSchema()
+        console.log("smart account :", account.address,account)
+        const txnHash = await kernelClient.sendTransaction({
+          to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
+          value: BigInt(0),  
+          data: "0x",  
+        })
+        console.log(txnHash)
+      
+        setAccountAddress(account.address,account.client.getChainId);
        
+  //       const transaction = {
+  //   to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076", // Replace with the recipient address
+  //   value: ethers.utils.parseEther("0.001"), // Sending 0.001 Ether
+  
+
+  // };
+
+  // const transactionReceipt = await sendTransaction(transaction);
      
-          console.log("ethersigner",smartAccountSigner,provider)
-          const providerether =   new ethers.providers.Web3Provider(provider);
-          // const signerwagmi = new ethers.providers.JsonRpcSigner(providerwagmi)
-          // const signerwagmi2 = new ethers.JsonRpcSigner(smartAccountSigner,account.address)
-          console.log("provider ether",providerether)
-          const signerether = await providerether.getSigner()
-          const provider2 = ethers.getDefaultProvider(
-            "sepolia"
-          );
+        //   console.log("ethersigner",smartAccountSigner,provider)
+        //   const providerether =   new ethers.providers.Web3Provider(provider);
+        //   // const signerwagmi = new ethers.providers.JsonRpcSigner(providerwagmi)
+        //   // const signerwagmi2 = new ethers.JsonRpcSigner(smartAccountSigner,account.address)
+        //   console.log("provider ether",providerether)
+        //   const signerether = await providerether.getSigner()
+        //   const provider2 = ethers.getDefaultProvider(
+        //     "sepolia"
+        //   );
           // const signerwagmi2 = await providerwagmi.getSigner()
           // console.log(signerwagmi)
         //   provider.signTypedData = function(params, types, signer) {
         //     return this._signTypedData(params, types, signer)
         // }
-        console.log("privy provider" , provider)
-        const extendedSigner = new ExtendedSmartAccountSigner(smartAccountSigner, provider);
-        console.log(extendedSigner)
-        eas.connect(extendedSigner);
-          const offchain = await eas.getOffchain();
-          console.log(offchain)
+        // console.log("privy provider" , provider)
+        // const extendedSigner = new ExtendedSmartAccountSigner(smartAccountSigner, provider);
+        // console.log(extendedSigner)
+        // eas.connect(extendedSigner);
+        //   const offchain = await eas.getOffchain();
+        //   console.log(offchain)
           // Create a custom signer that wraps the smartAccountSigner
           // const customSigner = new CustomSigner(smartAccountSigner, provider);
           // eas.connect(customSigner);
         
-          console.log(eas)
-          const schemaUID = "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995"; // Example schema UID
-          const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
-          const encodedData = schemaEncoder.encodeData([
-            { name: "eventId", value: 1, type: "uint256" },
-            { name: "voteIndex", value: 1, type: "uint8" },
-          ]);
-        console.log(encodedData)
+        //   console.log(eas)
+        //   const schemaUID = "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995"; // Example schema UID
+        //   const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
+        //   const encodedData = schemaEncoder.encodeData([
+        //     { name: "eventId", value: 1, type: "uint256" },
+        //     { name: "voteIndex", value: 1, type: "uint8" },
+        //   ]);
+        // console.log(encodedData)
           // const offchainAttestation = await offchain.signOffchainAttestation({
           //   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
           //   // Unix timestamp of when attestation expires. (0 for no expiration)
@@ -124,26 +161,19 @@ const providerwagmi = useEthersProvider()
           // }, extendedSigner);
   //  console.log("offchainattest",offchainAttestation)
           // Create an on-chain attestation
-          const tx = await eas.attest({
-            schema: schemaUID,
-            data: {
-              recipient: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
-              expirationTime: BigInt(0),
-              revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-              data: encodedData,
-            },
-          });
-  console.log(tx)
-          const receipt = await tx.wait();
-          console.log( receipt.logs[0].args[0]);    
-  // const transaction = {
-  //   to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076", // Replace with the recipient address
-  //   value: ethers.utils.parseEther("0.001"), // Sending 0.001 Ether
+  //         const tx = await eas.attest({
+  //           schema: schemaUID,
+  //           data: {
+  //             recipient: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
+  //             expirationTime: BigInt(0),
+  //             revocable: true, // Be aware that if your schema is not revocable, this MUST be false
+  //             data: encodedData,
+  //           },
+  //         });
+  // console.log(tx)
+  //         const receipt = await tx.wait();
+  //         console.log( receipt.logs[0].args[0]);    
   
-
-  // };
-
-  // const transactionReceipt = await sendTransaction(transaction);
         console.log("smart wallet address :", account.address)
       } catch (error) {
         console.error('Error initializing account:', error);

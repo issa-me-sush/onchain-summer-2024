@@ -74,16 +74,16 @@ export const privyConfig: PrivyClientConfig = {
     noPromptOnSignature: false,
   },
   loginMethods: [ 'github'],
-  defaultChain: sepolia 
+  defaultChain: baseSepolia
 
 };
 
 const wagmiConfig = createConfig({
 
-      chains: [ sepolia],
+      chains: [ sepolia , baseSepolia],
       ssr: true, 
       transports: {
-        // [baseSepolia.id]: http('https://base-sepolia-rpc.publicnode.com'),
+        [baseSepolia.id]: http('https://api.developer.coinbase.com/rpc/v1/base-sepolia/I8Prga4foqWfY7S6NVePDaBqCNY1hhp4'),
         [sepolia.id]: http('https://eth-sepolia.public.blastapi.io'),
       },
 });
