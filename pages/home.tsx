@@ -9,7 +9,6 @@ import { createPublicClient, http } from "viem";
 import { createZeroDevPaymasterClient, createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { sepolia } from "viem/chains";
-import { getUserEmbeddedWalletAddress } from "./api/getUsersAddress";
 import type { GetServerSideProps, InferGetServerSidePropsType } from "next/types";
 const dummyDevelopers = [
     { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
@@ -17,25 +16,23 @@ const dummyDevelopers = [
     { id: 3, githubUsername: "dev3", image: "/github.png", contributions: 45, score: 90 },
 ];
 
-export const getServerSideProps: GetServerSideProps<{
-    addresses: { embedded_address: string; smart_contract_address: string };
-}> = async () => {
-    const addresses: { embedded_address: string; smart_contract_address: string } | void = await getUserEmbeddedWalletAddress("lazycoder1");
-    console.log("addressessssss", addresses);
-    if (addresses === undefined) {
-        return {
-            notFound: true,
-        };
-    }
-    return {
-        props: { addresses: addresses },
-    };
-};
+// export const getServerSideProps: GetServerSideProps<{
+//     addresses: { embedded_address: string; smart_contract_address: string };
+// }> = async () => {
+//     const addresses: { embedded_address: string; smart_contract_address: string } | void = await getUserEmbeddedWalletAddress("lazycoder1");
+//     console.log("addressessssss", addresses);
+//     if (addresses === undefined) {
+//         return {
+//             notFound: true,
+//         };
+//     }
+//     return {
+//         props: { addresses: addresses },
+//     };
+// };
 
-const Home = ({ addresses }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Home = () => {
     const { ready, authenticated, login, user } = usePrivy();
-    console.log("user", user);
-    console.log("addressessssssss", addresses);
     const { wallets } = useWallets();
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy");
     const [accountAddress, setAccountAddress] = useState(null);
