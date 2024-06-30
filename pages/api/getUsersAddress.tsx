@@ -9,8 +9,8 @@ const myHeaders = new Headers();
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 console.log("PRIVY_APP_ID", PRIVY_APP_ID);
 const PRIVY_SECRET_ID = process.env.PRIVY_SECRET_ID;
-const BUNDLER_PAYMASTER_URL = process.env.BUNDLER_PAYMASTER_URL;
-const RPC = process.env.RPC;
+const BUNDLER_PAYMASTER_URL = process.env.NEXT_PUBLIC_BUNDLER_PAYMASTER_RPC;
+const RPC = process.env.NEXT_PUBLIC_RPC;
 const auth = btoa(`${PRIVY_APP_ID}:${PRIVY_SECRET_ID}`);
 
 myHeaders.append("privy-app-id", PRIVY_APP_ID as string);
@@ -36,47 +36,55 @@ export const getUserId = async (userName: string): Promise<{ sub: string; name: 
     }
 };
 
-export const getUserEmbeddedWalletAddress = async (userName: string) => {
-    try {
-        const userInfo = (await getUserId(userName)) as { sub: string; name: string };
-        const sub = userInfo.sub;
-        const name = userInfo.name;
-        const raw = JSON.stringify({
-            create_embedded_wallet: true,
-            linked_accounts: [
-                {
-                    username: userName,
-                    subject: sub.toString(),
-                    name: name,
-                    type: "github_oauth",
-                },
-            ],
-        });
+import { NextApiRequest, NextApiResponse } from "next";
 
-        const requestOptions: RequestInit = {
-            method: "POST",
-            headers: myHeaders,
-            body: raw,
-            redirect: "follow",
-        };
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method === "POST") {
+        const { userName } = req.body;
+        try {
+            const userInfo = (await getUserId(userName)) as { sub: string; name: string };
+            const sub = userInfo.sub;
+            const name = userInfo.name;
+            const raw = JSON.stringify({
+                create_embedded_wallet: true,
+                linked_accounts: [
+                    {
+                        username: userName,
+                        subject: sub.toString(),
+                        name: name,
+                        type: "github_oauth",
+                    },
+                ],
+            });
 
-        const res = await fetch("https://auth.privy.io/api/v1/users", requestOptions);
-        const resText: any = JSON.parse(await res.text());
-        if ("linked_accounts" in resText) {
-            const results = [];
-            for (const account of resText["linked_accounts"]) {
-                if (account.type === "wallet") {
-                    const kernerl_account = await getKernelAccountClient(account.address);
-                    results.push({ embedded_address: account.address, smart_contract_address: kernerl_account });
+            const requestOptions: RequestInit = {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow",
+            };
+
+            const response = await fetch("https://auth.privy.io/api/v1/users", requestOptions);
+            const resText: any = JSON.parse(await response.text());
+            if ("linked_accounts" in resText) {
+                const results = [];
+                for (const account of resText["linked_accounts"]) {
+                    if (account.type === "wallet") {
+                        const kernerl_account = await getKernelAccountClient(account.address);
+                        results.push({ embedded_address: account.address, smart_contract_address: kernerl_account });
+                    }
                 }
+                res.status(200).json(results);
             }
-            return results;
+        } catch (error) {
+            console.error(`Error getting wallet address for ${userName}: `, error);
+            res.status(500).json({ error: "Error getting wallet address" });
         }
-    } catch (error) {
-        console.error(`Error getting wallet address for ${userName}: `, error);
-        throw error;
+    } else {
+        res.setHeader("Allow", ["POST"]);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-};
+}
 
 export const getKernelAccountClient = async (address: `0x${string}`) => {
     try {

@@ -2,6 +2,7 @@ import { usePrivy, useToken, useWallets } from "@privy-io/react-auth";
 import UserMenu from "../components/UserMenu";
 import DeveloperCard from "../components/DeveloperCard";
 import { useEffect, useState } from "react";
+import useEas from "../hooks/eas";
 
 import { createWalletClient, custom } from "viem";
 import { providerToSmartAccountSigner, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -16,6 +17,8 @@ const dummyDevelopers = [
     { id: 3, githubUsername: "dev3", image: "/github.png", contributions: 45, score: 90 },
 ];
 
+const BUNDLER_PAYMASTER_URL = process.env.NEXT_PUBLIC_BUNDLER_PAYMASTER_RPC;
+const RPC = process.env.NEXT_PUBLIC_RPC;
 // export const getServerSideProps: GetServerSideProps<{
 //     addresses: { embedded_address: string; smart_contract_address: string };
 // }> = async () => {
@@ -35,7 +38,8 @@ const Home = () => {
     const { ready, authenticated, login, user } = usePrivy();
     const { wallets } = useWallets();
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy");
-    const [accountAddress, setAccountAddress] = useState(null);
+    const [accountAddress, setAccountAddress] = useState<null | `0x${string}`>(null);
+    const { setAccountClient, attestSchema, accountClient } = useEas();
 
     useEffect(() => {
         const initializeAccount = async () => {
@@ -66,7 +70,7 @@ const Home = () => {
                     entryPoint: ENTRYPOINT_ADDRESS_V07,
                     kernelVersion: "0.3.0",
                 });
-
+                console.log("wowowowwo");
                 // Create a Kernel account from the ECDSA validator
                 const account = await createKernelAccount(publicClient, {
                     plugins: {
@@ -75,7 +79,32 @@ const Home = () => {
                     entryPoint: ENTRYPOINT_ADDRESS_V07,
                     kernelVersion: "0.3.0",
                 });
+                // Create a Kernel account client to send user operations from the smart account
+                console.log("wewewewew");
+                console.log(BUNDLER_PAYMASTER_URL);
 
+                const kernelClient = createKernelAccountClient({
+                    account,
+                    chain: sepolia,
+                    entryPoint: ENTRYPOINT_ADDRESS_V07,
+                    bundlerTransport: http(BUNDLER_PAYMASTER_URL),
+                    middleware: {
+                        sponsorUserOperation: async ({ userOperation }) => {
+                            const zerodevPaymaster = createZeroDevPaymasterClient({
+                                chain: sepolia,
+                                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                                transport: http(BUNDLER_PAYMASTER_URL),
+                            });
+                            return zerodevPaymaster.sponsorUserOperation({
+                                userOperation,
+                                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                            });
+                        },
+                    },
+                });
+
+                setAccountClient(kernelClient);
+                // attestSchema();
                 setAccountAddress(account.address);
                 console.log("smart wallet address :", account.address);
             } catch (error) {
@@ -85,6 +114,17 @@ const Home = () => {
 
         initializeAccount();
     }, [wallets]);
+
+    useEffect(() => {
+        console.log("weeeheeee");
+        const attest = async () => {
+            console.log(accountClient);
+            if (accountClient) {
+                await attestSchema();
+            }
+        };
+        attest();
+    }, [accountClient, accountAddress]);
     const { getAccessToken } = useToken();
     const [accessToken, setAccessToken] = useState(null);
 
