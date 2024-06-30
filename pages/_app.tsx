@@ -74,16 +74,17 @@ export const privyConfig: PrivyClientConfig = {
     noPromptOnSignature: false,
   },
   loginMethods: [ 'github'],
+  defaultChain: sepolia 
 
 };
 
 const wagmiConfig = createConfig({
 
-      chains: [baseSepolia, sepolia],
+      chains: [ sepolia],
       ssr: true, 
       transports: {
-        [baseSepolia.id]: http('https://base-sepolia-rpc.publicnode.com'),
-        [sepolia.id]: http('https://sepolia.drpc.org'),
+        // [baseSepolia.id]: http('https://base-sepolia-rpc.publicnode.com'),
+        [sepolia.id]: http('https://eth-sepolia.public.blastapi.io'),
       },
 });
 
