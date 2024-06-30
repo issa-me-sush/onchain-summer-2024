@@ -11,10 +11,18 @@ const Profile = () => {
   const [githubData, setGithubData] = useState([]);
   useEffect(() => {
     const fetchGithubData = async () => {
-      const response = await fetch(`/api/getInfoFromGithub?username=${username}`);
-      const data = await response.json();
-      console.log(data)
-      setGithubData(data);
+      try {
+        const response = await fetch(`/api/getInfoFromGithub?userName=${username}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          setGithubData(data);
+        } else {
+          console.error("Failed to fetch GitHub data");
+        }
+      } catch (error) {
+        console.error("Error fetching GitHub data:", error);
+      } 
     };
 
     if (username) {
@@ -78,19 +86,24 @@ const Profile = () => {
             </ul>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg mb-4">
-  <h2 className="text-xl font-semibold mb-4">My Repositories</h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {githubData.map((repo, index) => (
-      <div key={index} className="bg-white p-4 rounded-lg shadow-clay-card">
-        <h3 className="text-lg font-semibold">{repo.name}</h3>
-        <p className="text-gray-700">{repo.org}</p>
-        <p className="text-gray-600">{repo.description}</p>
-        <p className="text-gray-500 text-sm mt-2">Updated at: {new Date(repo.updatedAt).toLocaleDateString()}</p>
-        <p className="text-gray-500 text-sm">Private: {repo.isPrivate ? 'Yes' : 'No'}</p>
+        <h2 className="text-xl font-semibold">My Repositories</h2>
+        <ul className="list-disc list-inside text-gray-700">
+          {loading ? (
+            <li>Loading...</li>
+          ) : (
+            githubData.map((repo, index) => (
+              <li key={index} className="bg-white p-4 rounded-lg shadow-clay-card mb-2">
+                <p className="font-bold">{repo.name}</p>
+                <p>{repo.description}</p>
+                <p>{repo.org}</p>
+                <p>{repo.isPrivate ? "Private" : "Public"}</p>
+                <p>Updated at: {new Date(repo.updatedAt).toLocaleString()}</p>
+                <p>Stars: {repo.stargazerCount}</p>
+              </li>
+            ))
+          )}
+        </ul>
       </div>
-    ))}
-  </div>
-</div>
 
         </TabsContent>
         <TabsContent value="endorse">

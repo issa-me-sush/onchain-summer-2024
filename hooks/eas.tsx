@@ -153,7 +153,7 @@ const useEas = () => {
             console.error("An error occurred while writing the contract:", error);
         }
     };
-    return { attestSchema, setAccountClient, accountClient };
+    return { attestSchemaInBlockchain, setAccountClient, accountClient };
 };
 
 export default useEas;
