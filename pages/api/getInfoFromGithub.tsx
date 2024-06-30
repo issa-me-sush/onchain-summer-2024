@@ -13,6 +13,7 @@ const query = `query lastUpdatedRepos ($login: String!) {
           }
           isPrivate
           description
+          stargazerCount
         }
       }
     }
@@ -24,16 +25,18 @@ const myHeaders = new Headers();
 myHeaders.append("Authorization", auth);
 myHeaders.append("Content-Type", "application/json");
 
-export const getInfoFromGithub = async (userName: string) => {
+import { NextApiRequest, NextApiResponse } from "next";
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const userName = req.query.userName as string;
     const options = {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({ query: query, variables: { login: userName } }),
     };
-    const res = await fetch(url, options);
-    const resText: any = JSON.parse(await res.text());
+    const response = await fetch(url, options);
+    const resText: any = JSON.parse(await response.text());
     if ("data" in resText && "repositoryOwner" in resText["data"] && "repositories" in resText["data"]["repositoryOwner"]) {
-        // console.log(resText["data"]["repositoryOwner"]["repositories"]["nodes"]);
         let orgs = resText["data"]["repositoryOwner"]["repositories"]["nodes"].filter((repo: any) => repo.isInOrganization);
         let customeData = orgs.map((repo: any) => {
             return {
@@ -44,13 +47,10 @@ export const getInfoFromGithub = async (userName: string) => {
                 updatedAt: repo.updatedAt,
             };
         });
-        return customeData;
+        res.status(200).json(customeData);
+    } else {
+        res.status(400).json(resText);
     }
     return resText;
 };
 // @ts-ignore 
-export default async (req, res) => {
-  const { username } = req.query;
-  const data = await getInfoFromGithub(username);
-  res.status(200).json(data);
-};
