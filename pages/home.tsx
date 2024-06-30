@@ -1,7 +1,14 @@
-import { usePrivy ,useToken} from "@privy-io/react-auth";
+import { usePrivy ,useToken,useWallets} from "@privy-io/react-auth";
 import UserMenu from "../components/UserMenu";
 import DeveloperCard from "../components/DeveloperCard";
 import { useEffect,useState } from "react";
+
+import { createWalletClient, custom } from 'viem';
+import { providerToSmartAccountSigner, ENTRYPOINT_ADDRESS_V07 } from 'permissionless';
+import { createPublicClient, http } from 'viem';
+import { createZeroDevPaymasterClient, createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { sepolia } from 'viem/chains';
 const dummyDevelopers = [
   { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
   { id: 2, githubUsername: "dev2", image: "/github.png", contributions: 30, score: 70 },
@@ -10,6 +17,55 @@ const dummyDevelopers = [
 
 const Home = () => {
   const { ready, authenticated, login,user } = usePrivy();
+  const {wallets} = useWallets();
+const embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === 'privy'));
+const [accountAddress, setAccountAddress] = useState(null);
+
+  useEffect(() => {
+    const initializeAccount = async () => {
+      try {
+        // Find the embedded wallet and get its EIP1193 provider
+        const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
+        if (!embeddedWallet) {
+          console.error('Embedded wallet not found');
+          return;
+        }
+        const provider = await embeddedWallet.getEthereumProvider();
+
+        // Use the EIP1193 `provider` from Privy to create a `SmartAccountSigner`
+        const smartAccountSigner = await providerToSmartAccountSigner(provider);
+
+        // Initialize a viem public client on your app's desired network
+        const publicClient = createPublicClient({
+          transport: http(sepolia.rpcUrls.default.http[0]),
+        });
+
+        // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`
+        const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+          signer: smartAccountSigner,
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+           kernelVersion: "0.3.0"
+        });
+
+        // Create a Kernel account from the ECDSA validator
+        const account = await createKernelAccount(publicClient, {
+          plugins: {
+            sudo: ecdsaValidator,
+          },
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+           kernelVersion: "0.3.0"
+        });
+
+
+        setAccountAddress(account.address);
+        console.log("smart wallet address :", account.address)
+      } catch (error) {
+        console.error('Error initializing account:', error);
+      }
+    };
+
+    initializeAccount();
+  }, [wallets]);
 const {getAccessToken}  = useToken()
 const [accessToken, setAccessToken] = useState(null);
 
@@ -30,6 +86,7 @@ useEffect(() => {
 }, [authenticated, getAccessToken]);
   const disableLogin = !ready || (ready && authenticated);
 console.log(user?.linkedAccounts)
+
   return (
     <div className="bg-gradient-to-b from-[#FED4CA] to-[#FFE3E1] min-h-screen p-5">
     
