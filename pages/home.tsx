@@ -13,14 +13,15 @@ import { Signer } from "ethers";
 import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import useEas from "../hooks/eas";
+import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 // import CustomSigner from "../lib/CustomSigner"
 // import { useSigner,useProvider } from "../lib/eas-wagmi-utils";
 import { useEthersProvider } from "../lib/eas-wagmi-utils";
 import { baseSepolia, sepolia } from 'viem/chains';
 const dummyDevelopers = [
-    { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
-    { id: 2, githubUsername: "dev2", image: "/github.png", contributions: 30, score: 70 },
-    { id: 3, githubUsername: "dev3", image: "/github.png", contributions: 45, score: 90 },
+  { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
+  { id: 2, githubUsername: "dev2", image: "/github.png", contributions: 30, score: 70 },
+  { id: 3, githubUsername: "dev3",image: "/github.png",  contributions: 45, score: 90 },
 ];
 export const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e"; // Sepolia v0.26
 
@@ -59,12 +60,12 @@ const providerwagmi = useEthersProvider()
           transport: http(baseSepolia.rpcUrls.default.http[0]),
         });
 
-                setAccountAddress(account.address);
-                console.log("smart wallet address :", account.address);
-            } catch (error) {
-                console.error("Error initializing account:", error);
-            }
-        };
+        // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`
+        const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+          signer: smartAccountSigner,
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+           kernelVersion: "0.3.0"
+        });
 
         // Create a Kernel account from the ECDSA validator
         const account = await createKernelAccount(publicClient, {
@@ -74,34 +75,56 @@ const providerwagmi = useEthersProvider()
           entryPoint: ENTRYPOINT_ADDRESS_V07,
            kernelVersion: "0.3.0"
         });
-        const kernelClient = createKernelAccountClient({
+        // const kernelClient = createKernelAccountClient({
+        //   account,
+        //   chain: baseSepolia,
+        //   entryPoint: ENTRYPOINT_ADDRESS_V07,
+        //   bundlerTransport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3'),
+        //   middleware: {
+        //     sponsorUserOperation: async ({ userOperation }) => {
+        //       const zerodevPaymaster = createZeroDevPaymasterClient({
+        //         chain: baseSepolia,
+        //         entryPoint: ENTRYPOINT_ADDRESS_V07,
+        //         transport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3'),
+        //       })
+        //       return zerodevPaymaster.sponsorUserOperation({
+        //         userOperation,
+        //         entryPoint: ENTRYPOINT_ADDRESS_V07,
+        //       })
+        //     }
+        //   }
+        // })
+
+       const  BUNDLER_PAYMASTER_URL = "https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3"
+        const paymasterClient = createPimlicoPaymasterClient({
+          transport: http(BUNDLER_PAYMASTER_URL),
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+      });
+
+      const pimlicoBundlerClient = createPimlicoBundlerClient({
+          transport: http(BUNDLER_PAYMASTER_URL),
+          entryPoint: ENTRYPOINT_ADDRESS_V07,
+      });
+
+      const kernelClient = createKernelAccountClient({
           account,
           chain: baseSepolia,
           entryPoint: ENTRYPOINT_ADDRESS_V07,
-          bundlerTransport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3 '),
+          bundlerTransport: http(BUNDLER_PAYMASTER_URL),
           middleware: {
-            sponsorUserOperation: async ({ userOperation }) => {
-              const zerodevPaymaster = createZeroDevPaymasterClient({
-                chain: baseSepolia,
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
-                transport: http('https://api.pimlico.io/v2/84532/rpc?apikey=ddaba84e-c7ff-45da-8d21-7b8e25c79fe3 '),
-              })
-              return zerodevPaymaster.sponsorUserOperation({
-                userOperation,
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
-              })
-            }
-          }
-        })
-        setAccountClient(kernelClient)
-        attestSchema()
+              sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
+              gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices
+          },
+      });
+        // setAccountClient(kernelClient)
+        // attestSchema()
         console.log("smart account :", account.address,account)
         const txnHash = await kernelClient.sendTransaction({
           to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
-          value: BigInt(0),  
+          value: BigInt(ethers.utils.parseEther("0.001").toString()),  
           data: "0x",  
         })
-        console.log(txnHash)
+        console.log("txn hash: ",txnHash)
       
         setAccountAddress(account.address,account.client.getChainId);
        
@@ -180,25 +203,50 @@ const providerwagmi = useEthersProvider()
       }
     };
 
-    return (
-        <div className="bg-gradient-to-b from-[#FED4CA] to-[#FFE3E1] min-h-screen p-5">
-            <div className="relative p-10 mt-5 text-center bg-white rounded-3xl shadow-clay-card">
-                <img src="/banner.svg" alt="Banner" className="absolute inset-0 object-cover w-full h-full opacity-50 rounded-3xl" />
-                <h2 className="relative text-2xl font-bold text-blue-900">
-                    Showcase and hire developers based on their contributions and attestations on chain
-                </h2>
-                <p className="relative text-blue-700">Discover top developers and their contributions to open-source projects.</p>
-                <button className="relative px-4 py-2 mt-4 text-white bg-blue-500 rounded shadow-clay-btn">Create a task</button>
-            </div>
+    initializeAccount();
+  }, [wallets]);
+const {getAccessToken}  = useToken()
+const [accessToken, setAccessToken] = useState(null);
 
-            <h3 className="mt-10 text-2xl font-semibold text-center">Top Developers</h3>
-            <div className="grid grid-cols-1 gap-4 mt-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center">
-                {dummyDevelopers.map((developer) => (
-                    <DeveloperCard key={developer.id} developer={developer} />
-                ))}
-            </div>
-        </div>
-    );
+useEffect(() => {
+  const fetchAccessToken = async () => {
+    if (authenticated) {
+      try {
+        const token = await getAccessToken();
+        console.log("token",token)
+        setAccessToken(token);
+      } catch (error) {
+        console.error('Failed to fetch access token:', error);
+      }
+    }
+  };
+
+  fetchAccessToken();
+}, [authenticated, getAccessToken]);
+  const disableLogin = !ready || (ready && authenticated);
+console.log(user?.linkedAccounts)
+
+  return (
+    <div className="bg-gradient-to-b from-[#FED4CA] to-[#FFE3E1] min-h-screen p-5">
+    
+
+      <div className="p-10 mt-5 text-center relative rounded-3xl bg-white shadow-clay-card">
+        <img src="/banner.svg" alt="Banner" className="absolute inset-0 object-cover w-full h-full opacity-50 rounded-3xl" />
+        <h2 className="relative text-2xl font-bold text-blue-900">Showcase and hire developers based on their contributions and attestations on chain</h2>
+        <p className="relative text-blue-700">
+          Discover top developers and their contributions to open-source projects.
+        </p>
+        <button className="relative px-4 py-2 mt-4 text-white bg-blue-500 rounded shadow-clay-btn">Create a task</button>
+      </div>
+
+      <h3 className="mt-10 text-2xl font-semibold text-center">Top Developers</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-10 justify-items-center">
+        {dummyDevelopers.map((developer) => (
+          <DeveloperCard key={developer.id} developer={developer} />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Home;
