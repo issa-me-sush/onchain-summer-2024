@@ -1,9 +1,6 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { getUserEmbeddedWalletAddress } from "./api/getUsersAddress";
-
-getUserEmbeddedWalletAddress("issa-me-sush");
 
 const Login = () => {
     const { ready, authenticated, login } = usePrivy();
