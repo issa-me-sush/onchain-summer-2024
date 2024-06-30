@@ -33,7 +33,7 @@
 // );
 // const config = createConfig({
 //   chains: [baseSepolia, sepolia],
-//   ssr: true, 
+//   ssr: true,
 //   transports: {
 //     [baseSepolia.id]: http('https://base-sepolia-rpc.publicnode.com'),
 //     [sepolia.id]: http('https://sepolia.drpc.org'),
@@ -44,7 +44,7 @@
 // const client = new QueryClient();
 
 // function MyApp({ Component, pageProps }: AppProps) {
-  
+
 //   return (
 //     <WagmiProvider config={config}>
 //       <QueryClientProvider client={client}>
@@ -58,51 +58,50 @@
 
 // export default MyApp;
 
-import '../styles/globals.css';
-import type { AppProps } from 'next/app';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PrivyProvider } from '@privy-io/react-auth';
-import { WagmiProvider, createConfig } from '@privy-io/wagmi';
-import { mainnet, sepolia, base, baseSepolia, optimism, polygon, arbitrum } from 'viem/chains';
-import { http } from 'wagmi';
-import { PrivyClientConfig } from '@privy-io/react-auth';
-import NavBar from '../components/nav';
+import "../styles/globals.css";
+import type { AppProps } from "next/app";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { mainnet, sepolia, base, baseSepolia, optimism, polygon, arbitrum } from "viem/chains";
+import { http } from "wagmi";
+import { PrivyClientConfig } from "@privy-io/react-auth";
+import NavBar from "../components/nav";
 export const privyConfig: PrivyClientConfig = {
-  embeddedWallets: {
-    createOnLogin: 'users-without-wallets',
-    requireUserPasswordOnCreate: false,
-    noPromptOnSignature: false,
-  },
-  loginMethods: [ 'github'],
-
+    embeddedWallets: {
+        createOnLogin: "users-without-wallets",
+        requireUserPasswordOnCreate: false,
+        noPromptOnSignature: false,
+    },
+    loginMethods: ["github"],
 };
 
 const wagmiConfig = createConfig({
-
-      chains: [baseSepolia, sepolia],
-      ssr: true, 
-      transports: {
-        [baseSepolia.id]: http('https://base-sepolia-rpc.publicnode.com'),
-        [sepolia.id]: http('https://sepolia.drpc.org'),
-      },
+    chains: [baseSepolia, sepolia],
+    ssr: true,
+    transports: {
+        [baseSepolia.id]: http("https://base-sepolia-rpc.publicnode.com"),
+        [sepolia.id]: http("https://sepolia.drpc.org"),
+    },
 });
 
-
+const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID as string;
+console.log("appId", appId);
 const queryClient = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <PrivyProvider appId="clxzce5br008ld6b8qlrm5kjn" config={privyConfig}>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <>
-<NavBar/>
-          <Component {...pageProps} />
-          </>
-        </WagmiProvider>
-      </QueryClientProvider>
-    </PrivyProvider>
-  );
+    return (
+        <PrivyProvider appId={appId} config={privyConfig}>
+            <QueryClientProvider client={queryClient}>
+                <WagmiProvider config={wagmiConfig}>
+                    <>
+                        <NavBar />
+                        <Component {...pageProps} />
+                    </>
+                </WagmiProvider>
+            </QueryClientProvider>
+        </PrivyProvider>
+    );
 }
 
 export default MyApp;
