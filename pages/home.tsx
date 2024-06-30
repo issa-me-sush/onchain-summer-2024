@@ -3,13 +3,13 @@ import UserMenu from "../components/UserMenu";
 import DeveloperCard from "../components/DeveloperCard";
 import { useEffect, useState } from "react";
 import useEas from "../hooks/eas";
-
+import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { createWalletClient, custom } from "viem";
 import { providerToSmartAccountSigner, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 import { createZeroDevPaymasterClient, createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { sepolia } from "viem/chains";
+import { baseSepolia, sepolia } from "viem/chains";
 import type { GetServerSideProps, InferGetServerSidePropsType } from "next/types";
 const dummyDevelopers = [
     { id: 1, githubUsername: "dev1", image: "/github.png", contributions: 50, score: 85 },
@@ -83,23 +83,24 @@ const Home = () => {
                 console.log("wewewewew");
                 console.log(BUNDLER_PAYMASTER_URL);
 
+                const paymasterClient = createPimlicoPaymasterClient({
+                    transport: http(BUNDLER_PAYMASTER_URL),
+                    entryPoint: ENTRYPOINT_ADDRESS_V07,
+                });
+
+                const pimlicoBundlerClient = createPimlicoBundlerClient({
+                    transport: http(BUNDLER_PAYMASTER_URL),
+                    entryPoint: ENTRYPOINT_ADDRESS_V07,
+                });
+
                 const kernelClient = createKernelAccountClient({
                     account,
-                    chain: sepolia,
+                    chain: baseSepolia,
                     entryPoint: ENTRYPOINT_ADDRESS_V07,
                     bundlerTransport: http(BUNDLER_PAYMASTER_URL),
                     middleware: {
-                        sponsorUserOperation: async ({ userOperation }) => {
-                            const zerodevPaymaster = createZeroDevPaymasterClient({
-                                chain: sepolia,
-                                entryPoint: ENTRYPOINT_ADDRESS_V07,
-                                transport: http(BUNDLER_PAYMASTER_URL),
-                            });
-                            return zerodevPaymaster.sponsorUserOperation({
-                                userOperation,
-                                entryPoint: ENTRYPOINT_ADDRESS_V07,
-                            });
-                        },
+                        sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
+                        gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices
                     },
                 });
 
