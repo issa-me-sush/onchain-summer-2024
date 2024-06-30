@@ -2,9 +2,10 @@ import React, { useState,useEffect } from 'react';
 import { usePrivy } from "@privy-io/react-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import useUserWallets from '../hooks/useUserWallets';
+import useEas from '../hooks/eas';
 const Profile = () => {
   const { user } = usePrivy();
-  
+  const {attestSchemaInBlockchain} = useEas()
   const username = user?.linkedAccounts?.find(account => account.type === 'github_oauth')?.username || 'N/A';
   const { data, loading, error } = useUserWallets(username);
   console.log("wallets",data)
@@ -12,7 +13,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
-        const response = await fetch(`/api/getInfoFromGithub?userName=${username}`);
+        const response = await fetch(`/api/getRepoInfoForUser?username=${username}`);
         if (response.ok) {
           const data = await response.json();
           console.log(data);
@@ -51,7 +52,16 @@ const Profile = () => {
   const [maintainerGithubId, setMaintainerGithubId] = useState('');
   const [remark, setRemark] = useState('');
   const [contributorId, setContributorId] = useState('');
+  const handleAttest = async (e) => {
+    e.preventDefault();
+    console.log(mergeUrl, maintainerGithubId, remark, contributorId)
+    const tx = await attestSchemaInBlockchain(mergeUrl, maintainerGithubId, remark, contributorId);
+    if (tx) {
+      // Update the user information in the database
 
+      // updateUser(username, `https://github.com/${username}`, githubData.reduce((acc, repo) => acc + repo.stargazerCount, 0));
+    }
+  };
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-clay-card rounded-[30px] mt-10">
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
@@ -98,7 +108,7 @@ const Profile = () => {
                 <p>{repo.org}</p>
                 <p>{repo.isPrivate ? "Private" : "Public"}</p>
                 <p>Updated at: {new Date(repo.updatedAt).toLocaleString()}</p>
-                <p>Stars: {repo.stargazerCount}</p>
+                <p>Stars: {repo.stars}</p>
               </li>
             ))
           )}
@@ -108,7 +118,7 @@ const Profile = () => {
         </TabsContent>
         <TabsContent value="endorse">
           <h2 className="text-xl font-semibold mb-4">Endorse by Attesting</h2>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleAttest}>
             <div>
               <label className="block text-gray-700">Merge URL</label>
               <input
@@ -145,6 +155,12 @@ const Profile = () => {
                 onChange={(e) => setContributorId(e.target.value)}
               />
             </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-clay-btn focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              Create Attestation
+            </button>
           </form>
         </TabsContent>
       </Tabs>

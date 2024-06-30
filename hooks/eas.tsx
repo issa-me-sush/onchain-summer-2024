@@ -110,11 +110,12 @@ const useEas = () => {
         remark: string,
         contributor_github_id: string
     ) => {
-        let schema = "uint256 score";
+        let schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
         // let schemaEncoded =
         const schemaEncoder = new SchemaEncoder(schema);
         const schemaUID = getSchemaUID(schema, "0x0000000000000000000000000000000000000000", true) as `0x${string}`;
         console.log("schemaUID", schemaUID);
+        console.log(github_url,maintainer_github_id,remark,contributor_github_id)
         const data = schemaEncoder.encodeData([
             { name: "github_url", value: github_url, type: "string" },
             { name: "maintainer_github_id", value: maintainer_github_id, type: "string" },
