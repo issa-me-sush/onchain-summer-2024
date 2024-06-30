@@ -13,7 +13,9 @@ import { Signer } from "ethers";
 import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import useEas from "../hooks/eas";
+import  {EAS_ABI} from "../constants/abi"
 import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
+
 // import CustomSigner from "../lib/CustomSigner"
 // import { useSigner,useProvider } from "../lib/eas-wagmi-utils";
 import { useEthersProvider } from "../lib/eas-wagmi-utils";
@@ -116,15 +118,39 @@ const providerwagmi = useEthersProvider()
               gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices
           },
       });
-        // setAccountClient(kernelClient)
-        // attestSchema()
+        setAccountClient(kernelClient)
+        attestSchema()
         console.log("smart account :", account.address,account)
-        const txnHash = await kernelClient.sendTransaction({
-          to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
-          value: BigInt(ethers.utils.parseEther("0.001").toString()),  
-          data: "0x",  
-        })
-        console.log("txn hash: ",txnHash)
+        // const txnHash = await kernelClient.sendTransaction({
+        //   to: "0x694a967A60b61Cb23dAA46571A137e4Fb0656076",
+        //   value: BigInt(ethers.utils.parseEther("0.001").toString()),  
+        //   data: "0x",  
+        // })
+        // console.log("txn hash: ",txnHash)
+        const schemaEncoder = new SchemaEncoder("uint256 score");
+        const encodedData = schemaEncoder.encodeData([
+          { name: "score", value: "0", type: "uint256" }
+        ]);
+        
+        const tx = await kernelClient.writeContract({
+          account: kernelClient.account ? kernelClient.account : "0x",
+          address: "0x4200000000000000000000000000000000000021",
+          chain: baseSepolia,
+          abi: EAS_ABI,
+          functionName: "attest",
+          args: [
+              {
+                  schema: "0xef2dbf5e8da46ea760bb4c6eb2635bf04adfc1ade6158e594263363db2a55bcf",
+                  data: {
+                    recipient: "0x0000000000000000000000000000000000000000",
+                    expirationTime: 0,
+                    revocable: true, // Be aware that if your schema is not revocable, this MUST be false
+                    data: encodedData,
+                  },
+              },
+          ],
+      });
+        console.log("txn hash: ",tx)
       
         setAccountAddress(account.address,account.client.getChainId);
        

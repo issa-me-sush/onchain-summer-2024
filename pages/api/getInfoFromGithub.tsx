@@ -48,3 +48,9 @@ export const getInfoFromGithub = async (userName: string) => {
     }
     return resText;
 };
+// @ts-ignore 
+export default async (req, res) => {
+  const { username } = req.query;
+  const data = await getInfoFromGithub(username);
+  res.status(200).json(data);
+};

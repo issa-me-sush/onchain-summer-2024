@@ -13,6 +13,7 @@
     "@privy-io/react-auth": "^1.73.0",
     "@privy-io/server-auth": "^1.7.4",
     "@privy-io/wagmi": "^0.2.10",
+    "@radix-ui/react-tabs": "^1.1.0",
     "@rainbow-me/rainbowkit": "^2.1.2",
     "@tanstack/react-query": "^5.28.4",
     "@zerodev/ecdsa-validator": "^5.3.1",

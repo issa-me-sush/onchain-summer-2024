@@ -121,3 +121,9 @@ export const getKernelAccountClient = async (address: `0x${string}`) => {
         throw error;
     }
 };
+// @ts-ignore 
+export default async (req, res) => {
+    const { username } = req.query;
+    const data = await getUserEmbeddedWalletAddress(username);
+    res.status(200).json(data);
+  };
