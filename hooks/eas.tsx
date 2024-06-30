@@ -9,7 +9,7 @@ import { easAbi } from "./easAbi";
 import { useWallets } from "@privy-io/react-auth";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createPimlicoPaymasterClient, createPimlicoBundlerClient } from "permissionless/clients/pimlico";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, decodeErrorResult, http } from "viem";
 
 const schemaRegistryContractAddress = "0x4200000000000000000000000000000000000020"; // base sepolia
 const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
@@ -104,6 +104,16 @@ const useEas = () => {
     //     }
     // };
 
+    useEffect(() => {
+        const attest = async () => {
+            console.log("account client", accountClient);
+            await attestSchemaInBlockchain("tset", "test", "test", "test");
+        };
+        if (accountClient) {
+            attest();
+        }
+    }, [accountClient]);
+
     const attestSchemaInBlockchain = async (
         github_url: string,
         maintainer_github_id: string,
@@ -112,8 +122,16 @@ const useEas = () => {
     ) => {
         let schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
         // let schemaEncoded =
+        console.log(
+            "error",
+            decodeErrorResult({
+                abi: easAbi,
+                data: "0x157bd4c3",
+            })
+        );
         const schemaEncoder = new SchemaEncoder(schema);
-        const schemaUID = getSchemaUID(schema, "0x0000000000000000000000000000000000000000", true) as `0x${string}`;
+        const schemaUID = getSchemaUID(schema, "0x0000000000000000000000000000000000000000", false) as `0x${string}`;
+
         console.log("schemaUID", schemaUID);
         console.log(github_url,maintainer_github_id,remark,contributor_github_id)
         const data = schemaEncoder.encodeData([
@@ -139,7 +157,7 @@ const useEas = () => {
                         data: {
                             recipient: "0xe95C4707Ecf588dfd8ab3b253e00f45339aC3054",
                             expirationTime: BigInt("1729782120075"),
-                            revocable: true,
+                            revocable: false,
                             refUID: "0x0000000000000000000000000000000000000000000000000000000000000000",
                             data: data,
                             value: BigInt("0"),
