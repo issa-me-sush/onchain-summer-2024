@@ -28,7 +28,7 @@ myHeaders.append("Content-Type", "application/json");
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const userName = req.query.userName as string;
+    const userName = req.query.username as string;
     const options = {
         method: "POST",
         headers: myHeaders,
@@ -45,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 description: repo.description,
                 isPrivate: repo.isPrivate,
                 updatedAt: repo.updatedAt,
+                stars: repo.stargazerCount,
             };
         });
         res.status(200).json(customeData);
@@ -52,5 +53,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(400).json(resText);
     }
     return resText;
-};
-// @ts-ignore 
+}
+// @ts-ignore
