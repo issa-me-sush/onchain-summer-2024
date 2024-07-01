@@ -20,7 +20,7 @@ const AvailablePage = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-clay-card rounded-lg mt-10">
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-clay-card rounded-[30px] mt-10">
       <h1 className="text-3xl font-bold mb-4"> Earn Attestations by Contributing! </h1>
       {loading ? (
         <p>Loading repositories...</p>
