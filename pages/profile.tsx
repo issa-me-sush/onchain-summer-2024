@@ -2,9 +2,11 @@ import React, { useState,useEffect } from 'react';
 import { usePrivy } from "@privy-io/react-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import useUserWallets from '../hooks/useUserWallets';
+import { useToast } from '../components/ui/use-toast';
 import useEas from '../hooks/eas';
 const Profile = () => {
   const { user } = usePrivy();
+  const { toast } = useToast()
   const {attestSchemaInBlockchain} = useEas()
   console.log("user",user)
   // @ts-ignore 
@@ -15,6 +17,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
+      
         const response = await fetch(`/api/getRepoInfoForUser?username=${username}`);
         if (response.ok) {
           const data = await response.json();
@@ -61,7 +64,9 @@ const Profile = () => {
     console.log(mergeUrl, maintainerGithubId, remark, contributorId)
     const tx = await attestSchemaInBlockchain(mergeUrl, maintainerGithubId, remark, contributorId);
     if (tx) {
-
+      toast({
+        description: "Attestation Successful!",
+      })
       const repoName = mergeUrl.split('/')[4]; // Extract repo name from merge URL
         // @ts-ignore 
       const repo = githubData.find((r) => r.name === repoName);

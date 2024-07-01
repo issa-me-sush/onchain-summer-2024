@@ -59,7 +59,7 @@
 // export default MyApp;
 
 import "../styles/globals.css";
-
+import { Toaster } from "../components/ui/toaster"
 import type { AppProps } from "next/app";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
@@ -99,7 +99,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <QueryClientProvider client={queryClient}>
                 <WagmiProvider config={wagmiConfig}>
                     <>
-             
+                    <Toaster />
                         <NavBar />
                         <Component {...pageProps} />
                     </>
