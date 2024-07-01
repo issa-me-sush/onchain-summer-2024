@@ -41,11 +41,11 @@ This integration allows us to pass any GitHub username and fetch relevant inform
 
 We leveraged Privy for seamless smart account-based transactions and paymaster-sponsored gas fee transactions for on-chain attestations. This integration ensures secure and hassle-free handling of blockchain transactions, enhancing the user experience.
 
-### Attestations on EAS
+### Attestations on EAS (Coinbase Onchain Verifications)
 
-We utilized Ethereum Attestation Service (EAS) for robust and verifiable attestations. This ensures that the contributions are authenticated and securely recorded on the blockchain.
+We utilized Ethereum Attestation Service (EAS) for robust and verifiable attestations. This ensures that the contributions are authenticated and securely recorded on the blockchain enhancing trust and reliability.
 
-## Additional Integrations
+### Paymaster and Bundler
 
-- **Bundlers and Paymasters**: Used to manage, ease and optimize the transaction process, ensuring cost-effectiveness and efficiency with seamlessness for the end user.
-- **Verifications through Attestations**: Ensures the credibility and accuracy of the recorded contributions, enhancing trust and reliability.
+Used to manage, ease and optimize the transaction process, ensuring cost-effectiveness and efficiency with seamlessness for the end user.
+
