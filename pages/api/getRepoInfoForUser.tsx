@@ -10,6 +10,8 @@ const query = `query lastUpdatedRepos ($login: String!) {
           owner {
             id
             login
+            url
+            avatarUrl
           }
           isPrivate
           description

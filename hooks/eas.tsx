@@ -22,7 +22,7 @@ const revocable = true;
 const useEas = () => {
     const [accountClient, setAccountClient] = useState<null | KernelAccountClient<ENTRYPOINT_ADDRESS_V07_TYPE>>(null);
     const { wallets } = useWallets();
-    
+
     // useEffect(() => {
     //     const attest = async () => {
     //         console.log("account client", accountClient);
@@ -105,15 +105,15 @@ const useEas = () => {
     //     }
     // };
 
-    useEffect(() => {
-        const attest = async () => {
-            console.log("account client", accountClient);
-            // await attestSchemaInBlockchain("tset", "test", "test", "test");
-        };
-        if (accountClient) {
-            attest();
-        }
-    }, [accountClient]);
+    // useEffect(() => {
+    //     const attest = async () => {
+    //         console.log("account client", accountClient);
+    //         // await attestSchemaInBlockchain("tset", "test", "test", "test");
+    //     };
+    //     if (accountClient) {
+    //         attest();
+    //     }
+    // }, [accountClient]);
 
     const attestSchemaInBlockchain = async (
         github_url: string,
@@ -121,21 +121,21 @@ const useEas = () => {
         remark: string,
         contributor_github_id: string
     ) => {
-        console.log(contributor_github_id)
+        console.log(contributor_github_id);
         const walletResponse = await fetch(`/api/getUsersAddress?username=${contributor_github_id}`);
         if (!walletResponse.ok) {
             throw new Error(`API responded with status: ${walletResponse.status}`);
         }
 
-        const walletText = await walletResponse.text();  
+        const walletText = await walletResponse.text();
         if (!walletText) {
-            throw new Error('Empty response body');
+            throw new Error("Empty response body");
         }
-        
-        const walletData = JSON.parse(walletText);  
+
+        const walletData = JSON.parse(walletText);
 
         console.log(walletData);
-    
+
         // let schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
         // let schemaEncoded =
         console.log(
@@ -149,7 +149,7 @@ const useEas = () => {
         const schemaUID = getSchemaUID(schema, "0x0000000000000000000000000000000000000000", false) as `0x${string}`;
 
         console.log("schemaUID", schemaUID);
-        console.log(github_url,maintainer_github_id,remark,contributor_github_id)
+        console.log(github_url, maintainer_github_id, remark, contributor_github_id);
         const data = schemaEncoder.encodeData([
             { name: "github_url", value: github_url, type: "string" },
             { name: "maintainer_github_id", value: maintainer_github_id, type: "string" },
@@ -171,7 +171,7 @@ const useEas = () => {
                     {
                         schema: schemaUID,
                         data: {
-// @ts-ignore 
+                            // @ts-ignore
                             recipient: walletData[0].smart_contract_address,
                             expirationTime: BigInt("1729782120075"),
                             revocable: false,
@@ -185,8 +185,6 @@ const useEas = () => {
 
             console.log("Transaction successful, tx:", tx);
             return tx;
-
-            
         } catch (error) {
             console.error("An error occurred while writing the contract:", error);
         }
