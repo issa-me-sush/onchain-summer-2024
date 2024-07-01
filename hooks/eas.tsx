@@ -10,10 +10,10 @@ import { useWallets } from "@privy-io/react-auth";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createPimlicoPaymasterClient, createPimlicoBundlerClient } from "permissionless/clients/pimlico";
 import { createPublicClient, decodeErrorResult, http } from "viem";
+import { schema } from "../constants/constants";
 
 const schemaRegistryContractAddress = "0x4200000000000000000000000000000000000020"; // base sepolia
 const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
-const schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
 const resolverAddress = "0x4200000000000000000000000000000000000020"; // base sepolia
 const eas = "0x4200000000000000000000000000000000000021" as `0x${string}`;
 const revocable = true;
@@ -107,7 +107,7 @@ const useEas = () => {
     useEffect(() => {
         const attest = async () => {
             console.log("account client", accountClient);
-            await attestSchemaInBlockchain("tset", "test", "test", "test");
+            await attestSchemaInBlockchain("tset", "lazycoder1", "test", "issa-me-sush");
         };
         if (accountClient) {
             attest();
@@ -120,7 +120,6 @@ const useEas = () => {
         remark: string,
         contributor_github_id: string
     ) => {
-        let schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
         // let schemaEncoded =
         console.log(
             "error",
