@@ -15,6 +15,6 @@
     "jsx": "preserve",
     "incremental": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/refresh.jsx", "lib/eas-wagmi-utils.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/refresh.jsx", "lib/eas-wagmi-utils.ts", "pages/open.jsx", "pages/contribute.jsx", "pages/home.jsx"],
   "exclude": ["node_modules"]
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import UserMenu from './UserMenu'; // Adjust the import path as needed
+import UserMenu from './UserMenu'; 
 
 const NavBar = () => {
   const { ready, authenticated, login } = usePrivy();
@@ -12,7 +12,7 @@ const NavBar = () => {
         <img src="/logo.svg" alt="Logo" className="h-8" />
       </div>
       <div className="flex space-x-4">
-        <button className="px-4 py-2 text-blue-500 bg-white rounded shadow-clay-btn">Create Task</button>
+       
         {authenticated ? (
           <UserMenu />
         ) : (

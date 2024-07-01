@@ -45,5 +45,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/home', '/profile', '/other-protected-routes'],
+  matcher: ['/home', '/profile', '/open','/contribute'],
 };

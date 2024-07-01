@@ -42,6 +42,7 @@ const useEas = () => {
                 const provider = await embeddedWallet.getEthereumProvider();
 
                 // Use the EIP1193 `provider` from Privy to create a `SmartAccountSigner`
+                // @ts-ignore 
                 const smartAccountSigner = await providerToSmartAccountSigner(provider);
 
                 // Initialize a viem public client on your app's desired network
