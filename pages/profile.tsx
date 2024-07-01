@@ -31,17 +31,17 @@ const Profile = () => {
     }
   }, [username]);
   // @ts-ignore
-  const walletAddress = data && data.length > 0 ? data[0].smart_account_address : "-";
-  const attestationsReceived = [
-    'Attested for completing project A',
-    'Attested for bug fixing in project B',
-    'Attested for code review in project C',
-  ];
-  const attestationsGiven = [
-    'Attested project D',
-    'Attested project E',
-    'Attested project F',
-  ];
+  const walletAddress = data && data.length > 0 ? data[0].smart_contract_address : "-";
+  // const attestationsReceived = [
+  //   'Attested for completing project A',
+  //   'Attested for bug fixing in project B',
+  //   'Attested for code review in project C',
+  // ];
+  // const attestationsGiven = [
+  //   'Attested project D',
+  //   'Attested project E',
+  //   'Attested project F',
+  // ];
   const myRepos = [
     'Repository 1',
     'Repository 2',
@@ -51,6 +51,8 @@ const Profile = () => {
   const [mergeUrl, setMergeUrl] = useState('');
   const [maintainerGithubId, setMaintainerGithubId] = useState('');
   const [remark, setRemark] = useState('');
+  const [attestationsReceived, setAttestationsReceived] = useState([]);
+  const [attestationsGiven, setAttestationsGiven] = useState([]);
   const [contributorId, setContributorId] = useState('');
   const handleAttest = async (e) => {
     e.preventDefault();
@@ -93,6 +95,53 @@ const Profile = () => {
   
     }
   };
+  useEffect(() => {
+    const getAttestations = async () => {
+      try {
+        const response = await fetch(`/api/getAddressAttestationsReceived?recipient=${walletAddress}`);
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data && data.data && data.data.data && data.data.data.attestations) {
+          setAttestationsReceived(data.data.data.attestations);
+        } else {
+          console.error('Unexpected response structure:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching attestations:', error);
+      }
+    };
+
+    if (walletAddress !== "-" && !loading && walletAddress) {
+      console.log("Fetching attestations for address:", walletAddress);
+      getAttestations();
+    }
+  }, [walletAddress, loading]);
+
+  useEffect(() => {
+    const getAttestationsGiven = async () => {
+      try {
+        const response = await fetch(`/api/getAddressAttestationsGiven?attester=${walletAddress}`);
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data && data.data && data.data.data && data.data.data.attestations) {
+          setAttestationsGiven(data.data.data.attestations);
+        } else {
+          console.error('Unexpected response structure:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching attestations given:', error);
+      }
+    };
+
+    if (walletAddress !== "-" && !loading && walletAddress) {
+      console.log("Fetching attestations given by address:", walletAddress);
+      getAttestationsGiven();
+    }
+  }, [walletAddress, loading]);
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-clay-card rounded-[30px] mt-10">
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
@@ -111,21 +160,45 @@ const Profile = () => {
             <p className="text-gray-700">{walletAddress}</p>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg mb-4">
-            <h2 className="text-xl font-semibold">Attestations Received</h2>
-            <ul className="list-disc list-inside text-gray-700">
-              {attestationsReceived.map((attestation, index) => (
-                <li key={index}>{attestation}</li>
-              ))}
+        <h2 className="text-xl font-semibold">Attestations Received</h2>
+        <ul className="list-disc list-inside text-gray-700">
+          {attestationsReceived.map((attestation, index) => (
+            <ul key={index}>
+              <div className="p-2 border rounded-lg mb-2 bg-white shadow">
+                <p><strong>Attester:</strong> {attestation.attester}</p>
+                <p><strong>Schema ID:</strong> {attestation.schemaId}</p>
+                <p><strong>Decoded Data:</strong></p>
+                <ul className="list-disc list-inside ml-4">
+                  <li><strong>GitHub URL:</strong> {attestation.decodedData.github_url}</li>
+                  <li><strong>Maintainer GitHub ID:</strong> {attestation.decodedData.maintainer_github_id}</li>
+                  <li><strong>Remark:</strong> {attestation.decodedData.remark}</li>
+                  <li><strong>Contributor GitHub ID:</strong> {attestation.decodedData.contributor_github_id}</li>
+                </ul>
+              </div>
             </ul>
-          </div>
-          <div className="bg-gray-100 p-4 rounded-lg mb-4">
-            <h2 className="text-xl font-semibold">Attestations Given</h2>
-            <ul className="list-disc list-inside text-gray-700">
-              {attestationsGiven.map((attestation, index) => (
-                <li key={index}>{attestation}</li>
-              ))}
+          ))}
+        </ul>
+      </div>
+      <div className="bg-gray-100 p-4 rounded-lg mb-4">
+        <h2 className="text-xl font-semibold">Attestations Given</h2>
+        <ul className="list-disc list-inside text-gray-700">
+          {attestationsGiven.map((attestation, index) => (
+            <ul key={index}>
+              <div className="p-2 border rounded-lg mb-2 bg-white shadow">
+                <p><strong>Recipient:</strong> {attestation.recipient}</p>
+                <p><strong>Schema ID:</strong> {attestation.schemaId}</p>
+                <p><strong>Decoded Data:</strong></p>
+                <ul className="list-disc list-inside ml-4">
+                  <li><strong>GitHub URL:</strong> {attestation.decodedData.github_url}</li>
+                  <li><strong>Maintainer GitHub ID:</strong> {attestation.decodedData.maintainer_github_id}</li>
+                  <li><strong>Remark:</strong> {attestation.decodedData.remark}</li>
+                  <li><strong>Contributor GitHub ID:</strong> {attestation.decodedData.contributor_github_id}</li>
+                </ul>
+              </div>
             </ul>
-          </div>
+          ))}
+        </ul>
+      </div>
           <div className="bg-gray-100 p-4 rounded-lg mb-4">
         <h2 className="text-xl font-semibold">My Repositories</h2>
         <ul className="list-disc list-inside text-gray-700">
