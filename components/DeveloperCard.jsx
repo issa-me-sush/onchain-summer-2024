@@ -1,7 +1,7 @@
 import Link from "next/link";
 const DeveloperCard = ({ developer }) => {
   return (
-    <div className=" bg-white shadow-clay-card rounded-lg py-6 flex flex-col items-center w-full max-w-sm">
+    <div className=" bg-white shadow-clay-card rounded-[30px] py-6 flex flex-col items-center w-full max-w-sm">
       <div className="photo-wrapper mb-4">
         <img className="w-24 h-24 rounded-full mx-auto" src={developer.profileUrl} alt={`${developer.githubUsername}'s avatar`} />
       </div>
