@@ -6,6 +6,8 @@ import useEas from '../hooks/eas';
 const Profile = () => {
   const { user } = usePrivy();
   const {attestSchemaInBlockchain} = useEas()
+  console.log("user",user)
+  // @ts-ignore 
   const username = user?.linkedAccounts?.find(account => account.type === 'github_oauth')?.username || 'N/A';
   const { data, loading, error } = useUserWallets(username);
   console.log("wallets",data)
@@ -61,6 +63,7 @@ const Profile = () => {
     if (tx) {
 
       const repoName = mergeUrl.split('/')[4]; // Extract repo name from merge URL
+        // @ts-ignore 
       const repo = githubData.find((r) => r.name === repoName);
 
 
@@ -69,7 +72,7 @@ const Profile = () => {
         return;
       }
 
-
+  // @ts-ignore 
       const starCount = repo.stars;
       
 
@@ -165,13 +168,19 @@ const Profile = () => {
           {attestationsReceived.map((attestation, index) => (
             <ul key={index}>
               <div className="p-2 border rounded-lg mb-2 bg-white shadow">
+             {/* @ts-ignore  */}
                 <p><strong>Attester:</strong> {attestation.attester}</p>
+                {/* @ts-ignore  */}
                 <p><strong>Schema ID:</strong> {attestation.schemaId}</p>
                 <p><strong>Decoded Data:</strong></p>
                 <ul className="list-disc list-inside ml-4">
+                       {/* @ts-ignore  */}
                   <li><strong>GitHub URL:</strong> {attestation.decodedData.github_url}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Maintainer GitHub ID:</strong> {attestation.decodedData.maintainer_github_id}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Remark:</strong> {attestation.decodedData.remark}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Contributor GitHub ID:</strong> {attestation.decodedData.contributor_github_id}</li>
                 </ul>
               </div>
@@ -185,13 +194,19 @@ const Profile = () => {
           {attestationsGiven.map((attestation, index) => (
             <ul key={index}>
               <div className="p-2 border rounded-lg mb-2 bg-white shadow">
+                     {/* @ts-ignore  */}
                 <p><strong>Recipient:</strong> {attestation.recipient}</p>
+                     {/* @ts-ignore  */}
                 <p><strong>Schema ID:</strong> {attestation.schemaId}</p>
                 <p><strong>Decoded Data:</strong></p>
                 <ul className="list-disc list-inside ml-4">
+                       {/* @ts-ignore  */}
                   <li><strong>GitHub URL:</strong> {attestation.decodedData.github_url}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Maintainer GitHub ID:</strong> {attestation.decodedData.maintainer_github_id}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Remark:</strong> {attestation.decodedData.remark}</li>
+                       {/* @ts-ignore  */}
                   <li><strong>Contributor GitHub ID:</strong> {attestation.decodedData.contributor_github_id}</li>
                 </ul>
               </div>
@@ -207,11 +222,17 @@ const Profile = () => {
           ) : (
             githubData.map((repo, index) => (
               <li key={index} className="bg-white p-4 rounded-lg shadow-clay-card mb-2">
+                     {/* @ts-ignore  */}
                 <p className="font-bold">{repo.name}</p>
+                     {/* @ts-ignore  */}
                 <p>{repo.description}</p>
+                     {/* @ts-ignore  */}
                 <p>{repo.org}</p>
+                     {/* @ts-ignore  */}
                 <p>{repo.isPrivate ? "Private" : "Public"}</p>
+                     {/* @ts-ignore  */}
                 <p>Updated at: {new Date(repo.updatedAt).toLocaleString()}</p>
+                     {/* @ts-ignore  */}
                 <p>Stars: {repo.stars}</p>
               </li>
             ))

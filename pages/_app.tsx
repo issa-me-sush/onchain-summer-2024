@@ -79,7 +79,7 @@ export const privyConfig: PrivyClientConfig = {
 };
 
 const wagmiConfig = createConfig({
-
+           // @ts-ignore 
       chains: [ sepolia , baseSepolia],
       ssr: true, 
       transports: {

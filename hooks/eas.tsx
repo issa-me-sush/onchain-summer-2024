@@ -51,6 +51,7 @@ const useEas = () => {
                 });
 
                 // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`
+                // @ts-ignore 
                 const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
                     signer: smartAccountSigner,
                     entryPoint: ENTRYPOINT_ADDRESS_V07,
@@ -58,6 +59,7 @@ const useEas = () => {
                 });
 
                 // Create a Kernel account from the ECDSA validator
+                           // @ts-ignore 
                 const account = await createKernelAccount(publicClient, {
                     plugins: {
                         sudo: ecdsaValidator,
@@ -79,6 +81,7 @@ const useEas = () => {
 
                 const kernelClient = createKernelAccountClient({
                     account,
+                               // @ts-ignore 
                     chain: baseSepolia,
                     entryPoint: ENTRYPOINT_ADDRESS_V07,
                     bundlerTransport: http(BUNDLER_PAYMASTER_URL),
@@ -165,6 +168,7 @@ const useEas = () => {
             const tx = await accountClient.writeContract({
                 account: accountClient.account ? accountClient.account : "0x",
                 address: eas,
+                           // @ts-ignore 
                 chain: baseSepolia,
                 abi: easAbi,
                 functionName: "attest",

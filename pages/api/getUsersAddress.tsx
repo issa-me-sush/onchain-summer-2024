@@ -67,6 +67,7 @@ export const getUserEmbeddedWalletAddress = async (userName: string) => {
             for (const account of resText["linked_accounts"]) {
                 if (account.type === "wallet") {
                     const kernerl_account = await getKernelAccountClient(account.address);
+                    // @ts-ignore 
                     results.push({ embedded_address: account.address, smart_contract_address: kernerl_account });
                 }
             }
@@ -86,6 +87,7 @@ export const getKernelAccountClient = async (address: `0x${string}`) => {
         });
 
         // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`
+                   // @ts-ignore 
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: {
                 address: address,
@@ -106,6 +108,7 @@ export const getKernelAccountClient = async (address: `0x${string}`) => {
         });
 
         // Create a Kernel account from the ECDSA validator
+                   // @ts-ignore 
         const account: KernelSmartAccount<ENTRYPOINT_ADDRESS_V07_TYPE> = await createKernelAccount(publicClient, {
             plugins: {
                 sudo: ecdsaValidator,
