@@ -26,9 +26,9 @@ query Attestations($where: AttestationWhereInput)  {
   }`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
-    const { recipient } = req.query;
+    const { attester } = req.query;
 
-    if (!recipient) {
+    if (!attester) {
         res.status(400).json({ message: "Missing attestor or recipient in the request." });
         return;
     }
@@ -37,8 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         query: query,
         variables: {
             where: {
-                recipient: {
-                    equals: recipient,
+                attester: {
+                    equals: attester,
                 },
                 schemaId: {
                     equals: schemaId,
@@ -88,31 +88,3 @@ const decodeData = (data: string) => {
         contributor_github_id: decodedData[3]["value"].value,
     };
 };
-
-/*
-    const decodedData = [
-  {
-    name: 'github_url',
-    type: 'string',
-    signature: 'string github_url',
-    value: { name: 'github_url', type: 'string', value: 'tset' }
-  },
-  {
-    name: 'maintainer_github_id',
-    type: 'string',
-    signature: 'string maintainer_github_id',
-    value: { name: 'maintainer_github_id', type: 'string', value: 'test' }
-  },
-  {
-    name: 'remark',
-    type: 'string',
-    signature: 'string remark',
-    value: { name: 'remark', type: 'string', value: 'test' }
-  },
-  {
-    name: 'contributor_github_id',
-    type: 'string',
-    signature: 'string contributor_github_id',
-    value: { name: 'contributor_github_id', type: 'string', value: 'test' }
-  }
-]*/
