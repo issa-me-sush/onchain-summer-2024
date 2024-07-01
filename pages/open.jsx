@@ -63,10 +63,12 @@ const OpenPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700">Select Repository</label>
+           
+
             <select
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               value={selectedRepo}
-              onChange={(e) => setSelectedRepo(JSON.parse(e.target.value))}
+              onChange={(e) => setSelectedRepo(e.target.value)}
             >
               <option value="">Select a repository</option>
               {repos.map((repo, index) => (
