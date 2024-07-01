@@ -62,10 +62,13 @@ const Profile = () => {
   const handleAttest = async (e) => {
     e.preventDefault();
     console.log(mergeUrl, maintainerGithubId, remark, contributorId)
+    toast({
+        description: "Please wait while the tx goes through! dont refresh until success toast!",
+      })
     const tx = await attestSchemaInBlockchain(mergeUrl, maintainerGithubId, remark, contributorId);
     if (tx) {
       toast({
-        description: "Attestation Successful!",
+        description: "Attestation Successful! updating profile!",
       })
       const repoName = mergeUrl.split('/')[4]; // Extract repo name from merge URL
         // @ts-ignore 
@@ -81,7 +84,7 @@ const Profile = () => {
       const starCount = repo.stars;
       
 
-      const githubResponse = await fetch(`/api/getGithubUserInfo?username=${username}`);
+      const githubResponse = await fetch(`https://fleek-test.network/services/1/ipfs/bafkreieyba4qsgo5mfj7mvmk3t6ge7gho27dep6vrtdpwn6545qgjmeecy/api/getGithubUserInfo?username=${username}`);
         if (!githubResponse.ok) {
             throw new Error(`GitHub API responded with status: ${githubResponse.status}`);
         }
@@ -100,6 +103,9 @@ const Profile = () => {
       });
       const data = await response.json();
       console.log('User updated:', data);
+      toast({
+        description: "profile updated!!",
+      })
   
     }
   };

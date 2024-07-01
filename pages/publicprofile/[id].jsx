@@ -76,7 +76,7 @@ const Profile = () => {
       const starCount = repo.stars;
       
 
-      const githubResponse = await fetch(`/api/getGithubUserInfo?username=${username}`);
+      const githubResponse = await fetch(`https://fleek-test.network/services/1/ipfs/bafkreieyba4qsgo5mfj7mvmk3t6ge7gho27dep6vrtdpwn6545qgjmeecy/api/getGithubUserInfo?username=${username}`);
         if (!githubResponse.ok) {
             throw new Error(`GitHub API responded with status: ${githubResponse.status}`);
         }
