@@ -23,7 +23,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "hooks/eas.tsx"  ],
+, "hooks/eas.tsx", "pages/profile.tsx"  ],
   "exclude": [
     "node_modules"
   ]
