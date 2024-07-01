@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-
+import { useToast } from '../components/ui/use-toast';
 const OpenPage = () => {
     const [repos, setRepos] = useState([]);
     const [selectedRepo, setSelectedRepo] = useState("");
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
-
+    const { toast } = useToast()
     const { user } = usePrivy();
     const username = user?.linkedAccounts?.find((account) => account.type === "github_oauth")?.username || "N/A";
 
@@ -49,8 +49,14 @@ const OpenPage = () => {
             const data = await response.json();
             if (data.success) {
                 setMessage("Open repository added successfully!");
+                toast({
+                  description: "Repository added successfully!",
+                })
             } else {
                 setMessage("Failed to add open repository.");
+                toast({
+                  description: "Failed!",
+                })
             }
         } catch (error) {
             console.error("Error adding open repository:", error);
