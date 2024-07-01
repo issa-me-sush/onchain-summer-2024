@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 // @ts-ignore
 const useUserWallets = (username) => {
     const [data, setData] = useState(null);
@@ -11,8 +11,11 @@ const useUserWallets = (username) => {
         const fetchData = async () => {
             try {
                 setLoading(true);
+                console.log("here");
                 const response = await fetch(`/api/getUsersAddress?username=${username}`);
-                const result = await response.json();
+                console.log("here2", response);
+                const result = JSON.parse(await response.text());
+                console.log("result", result);
                 setData(result);
             } catch (err) {
                 // @ts-ignore
