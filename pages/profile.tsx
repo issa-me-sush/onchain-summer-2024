@@ -31,7 +31,7 @@ const Profile = () => {
     }
   }, [username]);
   // @ts-ignore
-  const walletAddress = data && data.length > 0 ? data[0].embedded_address : "-";
+  const walletAddress = data && data.length > 0 ? data[0].smart_account_address : "-";
   const attestationsReceived = [
     'Attested for completing project A',
     'Attested for bug fixing in project B',
@@ -57,9 +57,40 @@ const Profile = () => {
     console.log(mergeUrl, maintainerGithubId, remark, contributorId)
     const tx = await attestSchemaInBlockchain(mergeUrl, maintainerGithubId, remark, contributorId);
     if (tx) {
-      // Update the user information in the database
 
-      // updateUser(username, `https://github.com/${username}`, githubData.reduce((acc, repo) => acc + repo.stargazerCount, 0));
+      const repoName = mergeUrl.split('/')[4]; // Extract repo name from merge URL
+      const repo = githubData.find((r) => r.name === repoName);
+
+
+      if (!repo) {
+        console.error('Repository not found in fetched data.');
+        return;
+      }
+
+
+      const starCount = repo.stars;
+      
+
+      const githubResponse = await fetch(`/api/getGithubUserInfo?username=${username}`);
+        if (!githubResponse.ok) {
+            throw new Error(`GitHub API responded with status: ${githubResponse.status}`);
+        }
+        const githubUserData = await githubResponse.json();
+         const profileUrl = githubUserData.avatar_url;
+         const response = await fetch('/api/addDev', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              githubId: username,
+              profileUrl,
+              starCount
+          })
+      });
+      const data = await response.json();
+      console.log('User updated:', data);
+  
     }
   };
   return (

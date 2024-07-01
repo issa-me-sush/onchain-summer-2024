@@ -9,6 +9,8 @@ export default async function handler(req, res) {
 
   if (method === 'POST') {
     try {
+      console.log("Request body:", req.body);
+
       // Determine the score multiplier based on star count
       let multiplier = 1;
       if (starCount > 1000 && starCount <= 5000) {
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
 
       res.status(200).json(user);
     } catch (error) {
+      console.error("Error adding/updating user:", error);
       res.status(500).json({ success: false, error: error.message });
     }
   } else {

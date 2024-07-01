@@ -34,7 +34,7 @@ const Home = () => {
     const { ready, authenticated, login, user } = usePrivy();
     const { wallets } = useWallets();
     const { address } = useAccount();
-    const { attestSchemaInBlockchain, setAccountClient, accountClient } = useEas();
+    // const { attestSchemaInBlockchain, setAccountClient, accountClient } = useEas();
     console.log(address, "<- address");
     const { sendTransaction } = useSendTransaction();
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy");

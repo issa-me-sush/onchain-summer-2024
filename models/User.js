@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema({
   },
   profileUrl: {
     type: String,
-    required: true,
+ 
   },
   score: {
     type: Number,

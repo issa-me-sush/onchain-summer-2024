@@ -10,7 +10,7 @@ import { useWallets } from "@privy-io/react-auth";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createPimlicoPaymasterClient, createPimlicoBundlerClient } from "permissionless/clients/pimlico";
 import { createPublicClient, decodeErrorResult, http } from "viem";
-
+import useUserWallets from "./useUserWallets";
 const schemaRegistryContractAddress = "0x4200000000000000000000000000000000000020"; // base sepolia
 const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
 const schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
@@ -21,7 +21,7 @@ const revocable = true;
 const useEas = () => {
     const [accountClient, setAccountClient] = useState<null | KernelAccountClient<ENTRYPOINT_ADDRESS_V07_TYPE>>(null);
     const { wallets } = useWallets();
-
+    
     // useEffect(() => {
     //     const attest = async () => {
     //         console.log("account client", accountClient);
@@ -107,7 +107,7 @@ const useEas = () => {
     useEffect(() => {
         const attest = async () => {
             console.log("account client", accountClient);
-            await attestSchemaInBlockchain("tset", "test", "test", "test");
+            // await attestSchemaInBlockchain("tset", "test", "test", "test");
         };
         if (accountClient) {
             attest();
@@ -120,6 +120,21 @@ const useEas = () => {
         remark: string,
         contributor_github_id: string
     ) => {
+        console.log(contributor_github_id)
+        const walletResponse = await fetch(`/api/getUsersAddress?username=${contributor_github_id}`);
+        if (!walletResponse.ok) {
+            throw new Error(`API responded with status: ${walletResponse.status}`);
+        }
+
+        const walletText = await walletResponse.text();  
+        if (!walletText) {
+            throw new Error('Empty response body');
+        }
+        
+        const walletData = JSON.parse(walletText);  
+
+        console.log(walletData);
+    
         let schema = "string github_url,string maintainer_github_id,string remark,string contributor_github_id";
         // let schemaEncoded =
         console.log(
@@ -155,7 +170,8 @@ const useEas = () => {
                     {
                         schema: schemaUID,
                         data: {
-                            recipient: "0xe95C4707Ecf588dfd8ab3b253e00f45339aC3054",
+// @ts-ignore 
+                            recipient: walletData[0].smart_contract_address,
                             expirationTime: BigInt("1729782120075"),
                             revocable: false,
                             refUID: "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -168,6 +184,8 @@ const useEas = () => {
 
             console.log("Transaction successful, tx:", tx);
             return tx;
+
+            
         } catch (error) {
             console.error("An error occurred while writing the contract:", error);
         }
