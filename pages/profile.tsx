@@ -3,7 +3,6 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import useUserWallets from '../hooks/useUserWallets';
 import useEas from '../hooks/eas';
-import toast from 'sonner'
 const Profile = () => {
   const { user } = usePrivy();
   const {attestSchemaInBlockchain} = useEas()
@@ -16,7 +15,6 @@ const Profile = () => {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
-        toast("Event has been created.")
         const response = await fetch(`/api/getRepoInfoForUser?username=${username}`);
         if (response.ok) {
           const data = await response.json();
