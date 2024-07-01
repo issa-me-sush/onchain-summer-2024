@@ -48,6 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 isPrivate: repo.isPrivate,
                 updatedAt: repo.updatedAt,
                 stars: repo.stargazerCount,
+                avatar: repo.owner.avatarUrl,
             };
         });
         res.status(200).json(customeData);
